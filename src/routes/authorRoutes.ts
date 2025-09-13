@@ -1,6 +1,7 @@
 import express from 'express';
 import { createAuthor, getAllAuthors, getAuthorById, updateAuthor, deleteAuthor } from '../models/Author';
 import { validateAuthorPayload } from '../middleware/validation';
+import { createError } from '../middleware/errorHandler';
 
 const router = express.Router();
 
@@ -15,50 +16,50 @@ router.get('/', (req, res) => {
   res.status(200).json(authors);
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
   const id = parseInt(req.params.id);
   
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid author ID' });
+    return next(createError('Invalid author ID', 400));
   }
 
   const author = getAuthorById(id);
   
   if (!author) {
-    return res.status(404).json({ error: 'Author not found' });
+    return next(createError('Author not found', 404));
   }
 
   res.status(200).json(author);
 });
 
-router.put('/:id', validateAuthorPayload, (req, res) => {
+router.put('/:id', validateAuthorPayload, (req, res, next) => {
   const id = parseInt(req.params.id);
   const { name } = req.body;
   
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid author ID' });
+    return next(createError('Invalid author ID', 400));
   }
 
   const author = updateAuthor(id, name.trim());
   
   if (!author) {
-    return res.status(404).json({ error: 'Author not found' });
+    return next(createError('Author not found', 404));
   }
 
   res.status(200).json(author);
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', (req, res, next) => {
   const id = parseInt(req.params.id);
   
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid author ID' });
+    return next(createError('Invalid author ID', 400));
   }
 
   const deleted = deleteAuthor(id);
   
   if (!deleted) {
-    return res.status(404).json({ error: 'Author not found' });
+    return next(createError('Author not found', 404));
   }
 
   res.status(204).send();

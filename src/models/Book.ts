@@ -9,6 +9,15 @@ let books: Book[] = [];
 let nextBookId = 1;
 
 export const createBook = (title: string, authorId: number, year: number): Book => {
+  const existingBook = books.find(book => 
+    book.title.toLowerCase() === title.toLowerCase() && 
+    book.authorId === authorId
+  );
+  
+  if (existingBook) {
+    throw new Error('Book with this title by this author already exists');
+  }
+
   const book: Book = {
     id: nextBookId++,
     title,

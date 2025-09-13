@@ -1,15 +1,11 @@
 import express from 'express';
 import { createAuthor, getAllAuthors, getAuthorById, updateAuthor, deleteAuthor } from '../models/Author';
+import { validateAuthorPayload } from '../middleware/validation';
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', validateAuthorPayload, (req, res) => {
   const { name } = req.body;
-  
-  if (!name || typeof name !== 'string' || name.trim() === '') {
-    return res.status(400).json({ error: 'Name is required' });
-  }
-
   const author = createAuthor(name.trim());
   res.status(201).json(author);
 });
@@ -35,16 +31,12 @@ router.get('/:id', (req, res) => {
   res.status(200).json(author);
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateAuthorPayload, (req, res) => {
   const id = parseInt(req.params.id);
   const { name } = req.body;
   
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid author ID' });
-  }
-
-  if (!name || typeof name !== 'string' || name.trim() === '') {
-    return res.status(400).json({ error: 'Name is required' });
   }
 
   const author = updateAuthor(id, name.trim());

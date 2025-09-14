@@ -13,40 +13,8 @@ router.post('/', validateAuthorPayload, (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  let authors = getAllAuthors();
-  const { search, sort, page, limit } = req.query;
-
-  if (search) {
-    const searchTerm = (search as string).toLowerCase();
-    authors = authors.filter(author => 
-      author.name.toLowerCase().includes(searchTerm)
-    );
-  }
-
-  if (sort) {
-    const sortField = sort as string;
-    if (sortField === 'name') {
-      authors.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortField === 'id') {
-      authors.sort((a, b) => a.id - b.id);
-    }
-  }
-
-  const pageNum = parseInt(page as string) || 1;
-  const limitNum = parseInt(limit as string) || 10;
-  const startIndex = (pageNum - 1) * limitNum;
-  const endIndex = startIndex + limitNum;
-  const paginatedAuthors = authors.slice(startIndex, endIndex);
-
-  res.status(200).json({
-    authors: paginatedAuthors,
-    pagination: {
-      page: pageNum,
-      limit: limitNum,
-      total: authors.length,
-      pages: Math.ceil(authors.length / limitNum)
-    }
-  });
+  const authors = getAllAuthors();
+  res.status(200).json(authors);
 });
 
 router.get('/:id', (req, res, next) => {

@@ -19,69 +19,21 @@ router.post('/', validateBookPayload, (req, res, next) => {
 });
 
 router.get('/', (req, res) => {
-  let books = getAllBooks();
-  const { search, author, year, sort, page, limit } = req.query;
-
-  if (search) {
-    const searchTerm = (search as string).toLowerCase();
-    books = books.filter(book => 
-      book.title.toLowerCase().includes(searchTerm)
-    );
-  }
-
-  if (author) {
-    const authorId = parseInt(author as string);
-    if (!isNaN(authorId)) {
-      books = books.filter(book => book.authorId === authorId);
-    }
-  }
-
-  if (year) {
-    const yearNum = parseInt(year as string);
-    if (!isNaN(yearNum)) {
-      books = books.filter(book => book.year === yearNum);
-    }
-  }
-
-  if (sort) {
-    const sortField = sort as string;
-    if (sortField === 'title') {
-      books.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortField === 'year') {
-      books.sort((a, b) => a.year - b.year);
-    } else if (sortField === 'author') {
-      books.sort((a, b) => a.authorId - b.authorId);
-    }
-  }
-
-  const pageNum = parseInt(page as string) || 1;
-  const limitNum = parseInt(limit as string) || 10;
-  const startIndex = (pageNum - 1) * limitNum;
-  const endIndex = startIndex + limitNum;
-  const paginatedBooks = books.slice(startIndex, endIndex);
-
-  res.status(200).json({
-    books: paginatedBooks,
-    pagination: {
-      page: pageNum,
-      limit: limitNum,
-      total: books.length,
-      pages: Math.ceil(books.length / limitNum)
-    }
-  });
+  const books = getAllBooks();
+  res.status(200).json(books);
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
   const id = parseInt(req.params.id);
   
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid book ID' });
+    return next(createError('Invalid book ID', 400));
   }
 
   const book = getBookById(id);
   
   if (!book) {
-    return res.status(404).json({ error: 'Book not found' });
+    return next(createError('Book not found', 404));
   }
 
   res.status(200).json(book);

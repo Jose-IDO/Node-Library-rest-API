@@ -38,13 +38,24 @@ export const getBookById = (id: number): Book | undefined => {
 
 export const updateBook = (id: number, title: string, authorId: number, year: number): Book | undefined => {
   const bookIndex = books.findIndex(book => book.id === id);
-  if (bookIndex !== -1) {
-    books[bookIndex].title = title;
-    books[bookIndex].authorId = authorId;
-    books[bookIndex].year = year;
-    return books[bookIndex];
+  if (bookIndex === -1) {
+    return undefined;
   }
-  return undefined;
+
+  const duplicate = books.find(
+    book =>
+      book.id !== id &&
+      book.title.toLowerCase() === title.toLowerCase() &&
+      book.authorId === authorId
+  );
+  if (duplicate) {
+    throw new Error('Book with this title by this author already exists');
+  }
+
+  books[bookIndex].title = title;
+  books[bookIndex].authorId = authorId;
+  books[bookIndex].year = year;
+  return books[bookIndex];
 };
 
 export const deleteBook = (id: number): boolean => {

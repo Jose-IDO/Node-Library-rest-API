@@ -1,27 +1,73 @@
- 
-A RESTful API for managing a library system with authors and books. Built with TypeScript, Express.js, and in-memory storage.
+ A RESTful API for managing a library system with authors and books. Built with TypeScript, Express.js, and in-memory storage.
 
-## Getting Started
+## Repository structure
+
+```
+Node-library/
+├── src/
+│   ├── index.ts           # Server entry (starts listening)
+│   ├── app.ts             # Express app (used by server and tests)
+│   ├── app.test.ts        # API tests
+│   ├── data/
+│   │   └── seedData.ts    # In-memory seed data
+│   ├── middleware/
+│   │   ├── errorHandler.ts
+│   │   ├── logger.ts
+│   │   └── validation.ts
+│   ├── models/
+│   │   ├── Author.ts      # Author in-memory store and CRUD
+│   │   └── Book.ts        # Book in-memory store and CRUD
+│   └── routes/
+│       ├── authorRoutes.ts
+│       └── bookRoutes.ts
+├── .gitignore
+├── jest.config.js
+├── package.json
+├── postman-collection.json
+├── README.md
+└── tsconfig.json
+```
+
+## How to run
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm
+- **Node.js** v14 or higher
+- **npm** (or yarn/pnpm)
 
-### Installation
+### Setup and run
 
-1. Clone the repository
-2. Install dependencies:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Node-library
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+3. **Run the API**
+   - **Development** (with ts-node, auto-reload via your tooling):
+     ```bash
+     npm run dev
+     ```
+   - **Production** (build then run):
+     ```bash
+     npm run build
+     npm start
+     ```
 
-4. The API will be available at `http://localhost:3000`
+4. **Use the API**  
+   Base URL: **http://localhost:3000**  
+   Endpoints: `/authors`, `/books` (see Core Features below).
+
+### Version control
+
+- Use the repo as usual: clone, branch, commit, push. Source lives in `src/`; config in root.
+- **Do not commit** `node_modules/` or `dist/` — they are listed in `.gitignore`.
+- Commit `package.json`, `tsconfig.json`, `src/`, and `.gitignore` so others can run the app with the steps above.
 
 ## Core Features
 
@@ -274,10 +320,19 @@ curl http://localhost:3000/authors/999
 ```
 
 ### Conflict (Duplicate Book)
-**409 Conflict**
+**409 Conflict**  
+Returned when **creating** a book or **updating** a book to a title+author combination that already exists (for another book).
 
+**Example (create):**
 ```bash
 curl -X POST http://localhost:3000/books \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Harry Potter and the Philosopher'\''s Stone", "authorId": 1, "year": 1997}'
+```
+
+**Example (update to duplicate):**
+```bash
+curl -X PUT http://localhost:3000/books/2 \
   -H "Content-Type: application/json" \
   -d '{"title": "Harry Potter and the Philosopher'\''s Stone", "authorId": 1, "year": 1997}'
 ```
@@ -298,8 +353,33 @@ All error responses follow this format:
 }
 ```
 
+## Testing
+
+You can verify changes in two ways:
+
+### 1. Automated tests
+
+Run the test suite (no server needed):
+
+```bash
+npm test
+```
+
+Tests hit the API using the same app instance (with seeded data) and cover authors (list, get, create, update, 404/400) and books (list, update duplicate → 409). Add or edit tests in `src/app.test.ts`.
+
+### 2. Manual testing
+
+1. Start the server:
+   ```bash
+   npm run dev
+   ```
+2. Call the API with **curl** (examples are in the Core Features section above), or import **Postman**: use `postman-collection.json` and set the `baseUrl` variable to `http://localhost:3000`.
+
+After code changes, run `npm test` and/or repeat your manual checks to confirm nothing is broken.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm start` - Start production server
+- `npm test` - Run automated API tests
